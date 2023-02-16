@@ -1,6 +1,11 @@
 #include <iostream>
 #include <zmq_addon.hpp>
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main   cppzmq_multipart_messages_main
+#endif
+
 int main()
 {
     zmq::context_t ctx;

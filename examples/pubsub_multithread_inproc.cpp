@@ -6,7 +6,7 @@
 #include "zmq.hpp"
 #include "zmq_addon.hpp"
 
-void PublisherThread(zmq::context_t *ctx) {
+static void PublisherThread(zmq::context_t *ctx) {
     //  Prepare publisher
     zmq::socket_t publisher(*ctx, zmq::socket_type::pub);
     publisher.bind("inproc://#1");
@@ -26,7 +26,7 @@ void PublisherThread(zmq::context_t *ctx) {
     }
 }
 
-void SubscriberThread1(zmq::context_t *ctx) {
+static void SubscriberThread1(zmq::context_t *ctx) {
     //  Prepare subscriber
     zmq::socket_t subscriber(*ctx, zmq::socket_type::sub);
     subscriber.connect("inproc://#1");
@@ -48,7 +48,7 @@ void SubscriberThread1(zmq::context_t *ctx) {
     }
 }
 
-void SubscriberThread2(zmq::context_t *ctx) {
+static void SubscriberThread2(zmq::context_t *ctx) {
     //  Prepare our context and subscriber
     zmq::socket_t subscriber(*ctx, zmq::socket_type::sub);
     subscriber.connect("inproc://#1");
@@ -68,6 +68,11 @@ void SubscriberThread2(zmq::context_t *ctx) {
                   << recv_msgs[1].to_string() << std::endl;
     }
 }
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main   cppzmq_pubsub_multithread_inproc_main
+#endif
 
 int main() {
     /*
@@ -99,4 +104,6 @@ int main() {
      *     Thread3: [B] Message in B envelope
      *     Thread3: [C] Message in C envelope
      */
+
+	return 0;
 }
