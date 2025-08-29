@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0...3.21)
+cmake_minimum_required(VERSION 3.0.0...3.31)
 
 list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -6,7 +6,7 @@ include (DetectCPPZMQVersion)
 
 project(cppzmq VERSION ${DETECTED_CPPZMQ_VERSION})
 
-include(flags OPTIONAL)
+include(xpflags)
 if(DEFINED XP_NAMESPACE)
   set(nSpace ${XP_NAMESPACE}::)
   set(nameSpace NAMESPACE ${nSpace})
