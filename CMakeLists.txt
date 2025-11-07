@@ -17,8 +17,10 @@ if (NOT TARGET ${nSpace}libzmq AND NOT TARGET ${nSpace}libzmq-static)
   if(COMMAND xpFindPkg)
     xpFindPkg(PKGS libzmq)
     set(ZeroMQ_FOUND TRUE)
+    set(installTargets cppzmq-static)
   else()
     find_package(ZeroMQ QUIET)
+    set(installTargets cppzmq cppzmq-static)
   endif()
 
   # libzmq autotools install: fallback to pkg-config
@@ -69,16 +71,19 @@ target_link_libraries(cppzmq-static INTERFACE ${nSpace}libzmq-static)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-install(TARGETS cppzmq cppzmq-static
+if(NOT DEFINED XP_INSTALL_CMAKEDIR)
+  set(XP_INSTALL_CMAKEDIR ${CMAKE_INSTALL_DATADIR}/cmake)
+endif()
+set(targetsFile ${PROJECT_NAME}Targets)
+xpPackageDevel(TARGETS_FILE ${targetsFile} LIBRARIES ${nSpace}cppzmq-static)
+
+install(TARGETS ${installTargets}
         EXPORT ${PROJECT_NAME}-targets)
 
 install(FILES ${CPPZMQ_HEADERS}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # GNUInstallDirs "DATADIR" wrong here; CMake search path wants "share".
-if(NOT DEFINED XP_INSTALL_CMAKEDIR)
-  set(XP_INSTALL_CMAKEDIR share/cmake/${PROJECT_NAME})
-endif()
 set(CPPZMQ_CMAKECONFIG_INSTALL_DIR "${XP_INSTALL_CMAKEDIR}" CACHE STRING "install path for cppzmqConfig.cmake")
 
 configure_file(libzmq-pkg-config/FindZeroMQ.cmake
@@ -86,7 +91,7 @@ configure_file(libzmq-pkg-config/FindZeroMQ.cmake
                COPYONLY)
 
 export(EXPORT ${PROJECT_NAME}-targets
-     FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake")
+     FILE "${CMAKE_CURRENT_BINARY_DIR}/${targetsFile}.cmake")
 configure_package_config_file(${PROJECT_NAME}Config.cmake.in
                               "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
                               INSTALL_DESTINATION ${CPPZMQ_CMAKECONFIG_INSTALL_DIR})
@@ -103,13 +108,15 @@ write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Conf
 set(CMAKE_SIZEOF_VOID_P ${CPPZMQ_SIZEOF_VOID_P})
 
 install(EXPORT ${PROJECT_NAME}-targets
-        FILE ${PROJECT_NAME}Targets.cmake ${nameSpace}
+        FILE ${targetsFile}.cmake ${nameSpace}
         DESTINATION ${CPPZMQ_CMAKECONFIG_INSTALL_DIR})
+if(NOT DEFINED XP_NAMESPACE)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
               DESTINATION ${CPPZMQ_CMAKECONFIG_INSTALL_DIR})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/libzmq-pkg-config/FindZeroMQ.cmake
               DESTINATION ${CPPZMQ_CMAKECONFIG_INSTALL_DIR}/libzmq-pkg-config)
+endif()
 
 option(CPPZMQ_BUILD_TESTS "Whether or not to build the tests" ON)
 
